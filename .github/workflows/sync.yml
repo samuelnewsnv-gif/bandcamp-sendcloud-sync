@@ -1,0 +1,32 @@
+name: Bandcamp to Sendcloud Sync
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    # This lets you also trigger a run manually from the GitHub website,
+    # via the "Actions" tab -> "Run workflow" button.
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Run the sync
+        run: python sync.py
+        env:
+          BANDCAMP_CLIENT_ID: ${{ secrets.BANDCAMP_CLIENT_ID }}
+          BANDCAMP_CLIENT_SECRET: ${{ secrets.BANDCAMP_CLIENT_SECRET }}
+          SENDCLOUD_PUBLIC_KEY: ${{ secrets.SENDCLOUD_PUBLIC_KEY }}
+          SENDCLOUD_SECRET_KEY: ${{ secrets.SENDCLOUD_SECRET_KEY }}
+          SENDCLOUD_INTEGRATION_ID: ${{ secrets.SENDCLOUD_INTEGRATION_ID }}
