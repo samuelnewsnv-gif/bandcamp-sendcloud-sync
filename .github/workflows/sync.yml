@@ -30,3 +30,5 @@ jobs:
           SENDCLOUD_PUBLIC_KEY: ${{ secrets.SENDCLOUD_PUBLIC_KEY }}
           SENDCLOUD_SECRET_KEY: ${{ secrets.SENDCLOUD_SECRET_KEY }}
           SENDCLOUD_INTEGRATION_ID: ${{ secrets.SENDCLOUD_INTEGRATION_ID }}
+
+# trigger fix
