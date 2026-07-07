@@ -160,7 +160,7 @@ def group_items_into_orders(items):
                 "order_total": 0,
                 "sale_item_ids": [],
                 "line_items": [],
-                "is_likely_preorder": False,
+                "is_preorder": False,
             }
  
         order = orders[payment_id]
@@ -168,9 +168,9 @@ def group_items_into_orders(items):
         order["order_total"] = round(order["order_total"] + (item.get("order_total") or 0), 2)
  
         item_name = item.get("item_name") or "Merch item"
-        is_preorder_item = "pre-order" in item_name.lower() or "preorder" in item_name.lower()
-        if is_preorder_item:
-            order["is_likely_preorder"] = True
+        ships_on = parse_begins_shipping_on(item.get("begins_shipping_on"))
+        if ships_on and ships_on > datetime.now(timezone.utc):
+            order["is_preorder"] = True
  
         order["line_items"].append({
             "name": item_name,
@@ -192,6 +192,19 @@ def parse_bandcamp_date(date_str):
     if not date_str:
         return None
     parsed = datetime.strptime(date_str, "%d %b %Y %H:%M:%S %Z")
+    return parsed.replace(tzinfo=timezone.utc)
+ 
+ 
+def parse_begins_shipping_on(date_str):
+    """
+    'begins_shipping_on' uses a different format, e.g.
+    '2026-01-30 16:00:00 UTC'. Returns None if not set --
+    which just means the item has no scheduled ship date
+    (i.e. it's not a preorder).
+    """
+    if not date_str:
+        return None
+    parsed = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S %Z")
     return parsed.replace(tzinfo=timezone.utc)
  
  
@@ -234,7 +247,7 @@ def build_sendcloud_order(order):
                 "message": "Awaiting fulfillment",
             },
             "order_created_at": convert_bandcamp_date(order["order_date"]),
-            "tags": ["preorder"] if order["is_likely_preorder"] else [],
+            "tags": ["preorder"] if order["is_preorder"] else [],
             "order_items": [
                 {
                     "name": line["name"],
