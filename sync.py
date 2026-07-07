@@ -187,25 +187,43 @@ def group_items_into_orders(items):
 def parse_bandcamp_date(date_str):
     """
     Bandcamp gives dates like '14 Dec 2014 23:01:10 GMT'.
-    Returns a proper Python datetime, or None if there's no date.
+    Returns a proper Python datetime, or None if there's no date
+    or it's in an unrecognized format.
     """
     if not date_str:
         return None
-    parsed = datetime.strptime(date_str, "%d %b %Y %H:%M:%S %Z")
-    return parsed.replace(tzinfo=timezone.utc)
+    try:
+        parsed = datetime.strptime(date_str, "%d %b %Y %H:%M:%S %Z")
+        return parsed.replace(tzinfo=timezone.utc)
+    except ValueError:
+        print(f"  Warning: couldn't parse order_date value: {date_str!r}")
+        return None
  
  
 def parse_begins_shipping_on(date_str):
     """
-    'begins_shipping_on' uses a different format, e.g.
-    '2026-01-30 16:00:00 UTC'. Returns None if not set --
-    which just means the item has no scheduled ship date
-    (i.e. it's not a preorder).
+    'begins_shipping_on' has been seen in two different formats from
+    Bandcamp: '2026-01-30 16:00:00 UTC' and '14 Jun 2024 00:00:00 GMT'.
+    We try both. Returns None if not set or unrecognized -- which
+    just means the item has no scheduled ship date (not a preorder).
     """
     if not date_str:
         return None
-    parsed = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S %Z")
-    return parsed.replace(tzinfo=timezone.utc)
+ 
+    known_formats = [
+        "%Y-%m-%d %H:%M:%S %Z",
+        "%d %b %Y %H:%M:%S %Z",
+    ]
+ 
+    for fmt in known_formats:
+        try:
+            parsed = datetime.strptime(date_str, fmt)
+            return parsed.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+ 
+    print(f"  Warning: couldn't parse begins_shipping_on value: {date_str!r}")
+    return None
  
  
 def convert_bandcamp_date(date_str):
