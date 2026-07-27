@@ -150,6 +150,7 @@ def group_items_into_orders(items):
                 "buyer_name": item.get("buyer_name"),
                 "buyer_email": item.get("buyer_email"),
                 "buyer_phone": item.get("buyer_phone"),
+                "ship_to_phone": item.get("ship_to_phone"),
                 "ship_to_name": item.get("ship_to_name"),
                 "ship_to_street": item.get("ship_to_street"),
                 "ship_to_street_2": item.get("ship_to_street_2"),
@@ -253,7 +254,7 @@ def build_sendcloud_order(order):
         "postal_code": order["ship_to_zip"] or "",
         "country_code": order["ship_to_country_code"] or "",
         "email": order["buyer_email"] or "",
-        "phone_number": order["buyer_phone"] or "",
+        "phone_number": order["ship_to_phone"] or order["buyer_phone"] or "",
     }
     if order["ship_to_state"] and order["ship_to_country_code"]:
         shipping_address["state_province_code"] = (
