@@ -25,8 +25,8 @@ if __name__ == "__main__":
     token = get_bandcamp_access_token()
 
     # Use any band_id you know has at least one unshipped order.
-    # Mote-Evolver (143765293) had orders in your earlier tests.
-    band_id = 143765293
+    # Eskimo (575689618) had orders in your earlier tests.
+    band_id = 575689618
 
     response = requests.post(
         "https://bandcamp.com/api/merchorders/4/get_orders",
